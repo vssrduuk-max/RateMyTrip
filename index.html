@@ -36,7 +36,7 @@
     .input{width:100%;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(0,0,0,.18);color:var(--text)}
     .grid{display:grid;grid-template-columns:1fr;gap:14px}@media(min-width:900px){.grid{grid-template-columns:1.2fr .8fr}}
     .placeImg{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:rgba(255,255,255,.04)}
-    .toast{position:fixed;left:16px;right:16px;bottom:16px;max-width:560px;margin:0 auto;padding:12px 14px;border-radius:16px;border:1px solid var(--border);background:rgba(18,26,42,.92);box-shadow:var(--shadow)}
+    .toast{position:fixed;left:16px;right:16px;bottom:16px;max-width:560px;margin:0 auto;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(18,26,42,.82);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 14px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)}
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
     .modal{background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:24px;max-width:440px;width:100%;box-shadow:var(--shadow)}
     .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid}
@@ -45,10 +45,152 @@
     .badge-bronze{background:rgba(205,127,50,.15);border-color:rgba(205,127,50,.5);color:#cd7f32}
     .badge-special{background:rgba(155,89,182,.15);border-color:rgba(155,89,182,.5);color:#9b59b6}
     .tab-bar{display:flex;gap:6px;margin-bottom:14px}.tab-bar button{flex:1}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+    @keyframes toastIn{from{opacity:0;transform:translateY(30px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes toastOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(30px) scale(.95)}}
+    @keyframes viewFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes swipeLeft{to{opacity:0;transform:translateX(-120px) rotate(-12deg)}}
+    @keyframes swipeRight{to{opacity:0;transform:translateX(120px) rotate(12deg)}}
+    @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,.4)}50%{box-shadow:0 0 16px 4px rgba(255,107,107,.15)}}
+    @keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    .card{transition:transform .22s cubic-bezier(.4,0,.2,1),box-shadow .22s cubic-bezier(.4,0,.2,1),border-color .22s ease}
+    .card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,.45),0 8px 16px rgba(0,0,0,.3),0 0 40px rgba(255,107,107,.06);border-color:rgba(255,255,255,.22)}
+
+    .btn{transition:all .2s cubic-bezier(.4,0,.2,1)}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.25);background:rgba(255,255,255,.1)}
+    .btn:active{transform:translateY(0) scale(.97)}
+    .btnPrimary:hover{background:rgba(255,107,107,.3);border-color:rgba(255,107,107,.7);box-shadow:0 4px 20px rgba(255,107,107,.2)}
+    .btnSuccess:hover{background:rgba(46,204,113,.3);border-color:rgba(46,204,113,.7);box-shadow:0 4px 20px rgba(46,204,113,.2)}
+
+    .nav button{transition:all .2s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+    .nav button:hover{background:rgba(255,255,255,.08);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.2)}
+    .nav button[aria-current='page']{animation:pulseGlow 2.5s ease-in-out infinite}
+    .nav button::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:var(--accent);transition:all .25s ease;transform:translateX(-50%);border-radius:2px}
+    .nav button:hover::after,.nav button[aria-current='page']::after{width:60%}
+
+    .pill{transition:all .18s ease}.pill:hover{background:rgba(255,255,255,.08);transform:scale(1.04)}
+
+    .toast{animation:toastIn .35s cubic-bezier(.4,0,.2,1) forwards;backdrop-filter:blur(14px)}
+    .toast.hiding{animation:toastOut .3s cubic-bezier(.4,0,.2,1) forwards}
+
+    #view{animation:viewFade .35s ease}
+
+    .placeImg{transition:transform .4s cubic-bezier(.4,0,.2,1),filter .4s ease}
+    .card:hover .placeImg{transform:scale(1.03);filter:brightness(1.08)}
+
+    .img-shimmer{background:linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 75%);background-size:800px 100%;animation:shimmer 1.8s ease-in-out infinite}
+
+    .swipe-card{transition:transform .35s cubic-bezier(.4,0,.2,1)}
+    .swipe-card.swiping-left{animation:swipeLeft .4s cubic-bezier(.4,0,.2,1) forwards}
+    .swipe-card.swiping-right{animation:swipeRight .4s cubic-bezier(.4,0,.2,1) forwards}
+
+    .scroll-top{position:fixed;bottom:70px;right:20px;z-index:40;width:44px;height:44px;border-radius:50%;background:rgba(255,107,107,.85);color:#fff;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(20px);transition:all .3s cubic-bezier(.4,0,.2,1);pointer-events:none;box-shadow:0 6px 20px rgba(255,107,107,.3)}
+    .scroll-top.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+    .scroll-top:hover{transform:translateY(-3px) scale(1.08);box-shadow:0 8px 28px rgba(255,107,107,.45)}
+
+    .input{transition:border-color .2s ease,box-shadow .2s ease}
+    .input:focus{outline:none;border-color:rgba(255,107,107,.5);box-shadow:0 0 0 3px rgba(255,107,107,.1)}
+
+    .modal{animation:slideUp .3s cubic-bezier(.4,0,.2,1)}
+    .modal-overlay{animation:fadeIn .2s ease}
+
+    .badge{transition:transform .18s ease}.badge:hover{transform:scale(1.08)}
+
+    .hero-stat{animation:countUp .5s ease both}
+    .hero-stat:nth-child(2){animation-delay:.1s}
+    .hero-stat:nth-child(3){animation-delay:.2s}
+
+    /* ── Staggered Card Entrance ── */
+    @keyframes cardEntrance{from{opacity:0;transform:translateY(30px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .stagger-card{opacity:0;animation:cardEntrance .5s cubic-bezier(.4,0,.2,1) forwards}
+    .stagger-card:nth-child(1){animation-delay:.05s}
+    .stagger-card:nth-child(2){animation-delay:.12s}
+    .stagger-card:nth-child(3){animation-delay:.19s}
+    .stagger-card:nth-child(4){animation-delay:.26s}
+    .stagger-card:nth-child(5){animation-delay:.33s}
+    .stagger-card:nth-child(6){animation-delay:.40s}
+    .stagger-card:nth-child(7){animation-delay:.47s}
+    .stagger-card:nth-child(8){animation-delay:.54s}
+
+    /* ── Ripple Effect ── */
+    @keyframes ripple{to{transform:scale(4);opacity:0}}
+    .btn,.nav button{position:relative;overflow:hidden}
+    .ripple-circle{position:absolute;border-radius:50%;background:rgba(255,255,255,.25);transform:scale(0);animation:ripple .55s ease-out forwards;pointer-events:none}
+
+    /* ── Skeleton Loading Cards ── */
+    @keyframes skeletonPulse{0%,100%{opacity:.4}50%{opacity:.8}}
+    .skeleton-card{border-radius:18px;background:rgba(255,255,255,.03);border:1px solid var(--border);overflow:hidden}
+    .skeleton-card .sk-img{height:180px;background:linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 75%);background-size:800px 100%;animation:shimmer 1.8s ease-in-out infinite}
+    .skeleton-card .sk-line{height:14px;border-radius:8px;margin:12px 14px;background:rgba(255,255,255,.06);animation:skeletonPulse 1.5s ease-in-out infinite}
+    .skeleton-card .sk-line.short{width:60%}
+    .skeleton-card .sk-line.xs{width:35%;height:10px}
+
+    /* ── Top Progress Bar ── */
+    @keyframes progressSlide{0%{left:-30%;width:30%}50%{left:20%;width:60%}100%{left:100%;width:30%}}
+    .progress-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:100;overflow:hidden;opacity:0;transition:opacity .2s}
+    .progress-bar.active{opacity:1}
+    .progress-bar::after{content:'';position:absolute;top:0;height:100%;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:progressSlide 1.2s cubic-bezier(.4,0,.2,1) infinite}
+
+    /* ── Heart / Save Animation ── */
+    @keyframes heartPop{0%{transform:scale(1)}25%{transform:scale(1.35)}50%{transform:scale(.9)}100%{transform:scale(1)}}
+    @keyframes heartBurst{0%{opacity:1;transform:scale(0)}50%{opacity:.6;transform:scale(1.6)}100%{opacity:0;transform:scale(2.2)}}
+    .heart-btn{position:relative;transition:color .2s ease}
+    .heart-btn.liked{color:var(--accent);animation:heartPop .4s cubic-bezier(.4,0,.2,1)}
+    .heart-btn::before{content:'';position:absolute;inset:-6px;border-radius:50%;background:rgba(255,107,107,.2);opacity:0;pointer-events:none}
+    .heart-btn.liked::before{animation:heartBurst .5s ease forwards}
+
+    /* ── Confetti ── */
+    @keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(120px) rotate(720deg)}}
+    .confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;z-index:200;pointer-events:none;animation:confettiFall 1.2s cubic-bezier(.25,.46,.45,.94) forwards}
+
+    /* ── Typewriter Effect ── */
+    @keyframes blink{0%,50%{border-color:var(--accent)}51%,100%{border-color:transparent}}
+    .typewriter{overflow:hidden;white-space:nowrap;border-right:2px solid var(--accent);animation:blink .8s step-end infinite;display:inline-block}
+
+    /* ── Glassmorphism Enhancement ── */
+    .glass{background:rgba(255,255,255,.04);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);border:1px solid rgba(255,255,255,.10);box-shadow:0 8px 32px rgba(0,0,0,.3),0 1.5px 0 rgba(255,255,255,.07) inset,0 -1px 0 rgba(255,255,255,.03) inset}
+
+    /* ── Hover Glow Ring (vivid) ── */
+    @keyframes glowRing{0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,0),0 0 0 0 rgba(52,152,219,0)}33%{box-shadow:0 0 0 7px rgba(255,107,107,.18),0 0 20px 2px rgba(255,107,107,.08)}66%{box-shadow:0 0 0 7px rgba(52,152,219,.15),0 0 20px 2px rgba(52,152,219,.06)}100%{box-shadow:0 0 0 0 rgba(255,107,107,0),0 0 0 0 rgba(52,152,219,0)}}
+    .glow-hover:hover{animation:glowRing 2.2s ease infinite}
+
+    /* ── Animated Gradient Border on Cards ── */
+    @property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+    @keyframes borderSpin{to{--angle:360deg}}
+    .card{position:relative}
+    .card::before{content:'';position:absolute;inset:-1px;border-radius:19px;padding:1px;background:conic-gradient(from var(--angle),transparent 60%,rgba(255,107,107,.35) 75%,rgba(52,152,219,.3) 85%,transparent 95%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .4s ease;pointer-events:none;z-index:1}
+    .card:hover::before{opacity:1;animation:borderSpin 3.5s linear infinite}
+
+    /* ── Card Aura Glow (background light behind card) ── */
+    .card::after{content:'';position:absolute;inset:-12px;border-radius:28px;background:radial-gradient(ellipse at 50% 50%,rgba(255,107,107,.10),rgba(52,152,219,.06),transparent 70%);opacity:0;transition:opacity .45s ease;pointer-events:none;z-index:-1;filter:blur(18px)}
+    .card:hover::after{opacity:1}
+
+    /* ── Inner Light Stripe ── */
+    @keyframes innerShine{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    .card:hover .cardBd{background-image:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.03) 45%,rgba(255,255,255,.06) 50%,rgba(255,255,255,.03) 55%,transparent 60%);background-size:200% 100%;animation:innerShine 2.5s ease-in-out infinite}
+
+    /* ── Floating Label Input ── */
+    .float-group{position:relative;margin-bottom:16px}
+    .float-group .input{padding-top:18px}
+    .float-group label{position:absolute;top:50%;left:12px;transform:translateY(-50%);color:var(--muted);font-size:14px;transition:all .2s ease;pointer-events:none}
+    .float-group .input:focus+label,.float-group .input:not(:placeholder-shown)+label{top:8px;transform:translateY(0);font-size:10px;color:var(--accent)}
+
+    /* ── Smooth Number Counter ── */
+    .counter{display:inline-block;font-variant-numeric:tabular-nums}
+
+    /* ── Notification Dot ── */
+    @keyframes notifPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+    .notif-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;animation:notifPulse 2s ease infinite}
+
+    /* ── Card Tilt on Hover (subtle) ── */
+    .tilt-card{transition:transform .3s ease}
   </style>
 </head>
 <body>
-  <header class="topbar">
+  <header class="topbar glass">
     <div class="container">
       <div class="hero">
         <div class="brand"><div class="logo"></div>
@@ -70,6 +212,77 @@ const qs=(s,el=document)=>el.querySelector(s)
 const qsa=(s,el=document)=>[...el.querySelectorAll(s)]
 const uid=()=>Math.random().toString(16).slice(2)+Date.now().toString(16)
 function toast(msg){const el=qs('#toast');el.textContent=msg;el.style.display='block';clearTimeout(window.__t);window.__t=setTimeout(()=>el.style.display='none',3200)}
+
+/* ── Ripple Effect ── */
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.btn,.nav button')
+  if(!btn)return
+  const circle=document.createElement('span')
+  circle.className='ripple-circle'
+  const rect=btn.getBoundingClientRect()
+  const size=Math.max(rect.width,rect.height)
+  circle.style.width=circle.style.height=size+'px'
+  circle.style.left=(e.clientX-rect.left-size/2)+'px'
+  circle.style.top=(e.clientY-rect.top-size/2)+'px'
+  btn.appendChild(circle)
+  circle.addEventListener('animationend',()=>circle.remove())
+})
+
+/* ── Progress Bar ── */
+const progressEl=document.createElement('div');progressEl.className='progress-bar';document.body.prepend(progressEl)
+function showProgress(){progressEl.classList.add('active')}
+function hideProgress(){progressEl.classList.remove('active')}
+
+/* ── Confetti Effect ── */
+function spawnConfetti(x,y,count=25){
+  const colors=['#ff6b6b','#f1c40f','#2ecc71','#9b59b6','#3498db','#e67e22']
+  for(let i=0;i<count;i++){
+    const piece=document.createElement('div')
+    piece.className='confetti-piece'
+    piece.style.left=(x+Math.random()*60-30)+'px'
+    piece.style.top=(y+Math.random()*20-10)+'px'
+    piece.style.background=colors[Math.floor(Math.random()*colors.length)]
+    piece.style.animationDelay=(Math.random()*.3)+'s'
+    piece.style.animationDuration=(.8+Math.random()*.6)+'s'
+    piece.style.transform=`rotate(${Math.random()*360}deg)`
+    document.body.appendChild(piece)
+    piece.addEventListener('animationend',()=>piece.remove())
+  }
+}
+
+/* ── Smooth Counter ── */
+function animateCounter(el,target,duration=800){
+  const start=performance.now()
+  const from=parseInt(el.textContent)||0
+  function tick(now){
+    const p=Math.min((now-start)/duration,1)
+    const eased=1-Math.pow(1-p,3)
+    el.textContent=Math.round(from+(target-from)*eased)
+    if(p<1)requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
+
+/* ── Typewriter Effect ── */
+function typewriter(el,text,speed=45){
+  el.classList.add('typewriter');el.textContent=''
+  let i=0
+  function type(){if(i<text.length){el.textContent+=text[i];i++;setTimeout(type,speed)}else{el.style.borderRight='none'}}
+  type()
+}
+
+/* ── Card Tilt (mouse-follow) ── */
+document.addEventListener('mousemove',function(e){
+  const card=e.target.closest('.tilt-card')
+  if(!card)return
+  const rect=card.getBoundingClientRect()
+  const x=(e.clientX-rect.left)/rect.width-.5
+  const y=(e.clientY-rect.top)/rect.height-.5
+  card.style.transform=`perspective(600px) rotateY(${x*6}deg) rotateX(${-y*6}deg) translateY(-4px)`
+})
+document.addEventListener('mouseleave',function(e){
+  if(e.target.classList&&e.target.classList.contains('tilt-card')){e.target.style.transform=''}
+},true)
 
 /* ── Data Store (sessionStorage) ── */
 function loadData(key,fallback){try{const v=sessionStorage.getItem(key);return v?JSON.parse(v):fallback}catch(e){return fallback}}
@@ -102,7 +315,47 @@ const CHATS=[
   {id:'c4',name:'Tom Bakker',avatar:'T',msgs:[{from:'them',text:'Die tempels in Chiang Mai zijn echt indrukwekkend'},{from:'me',text:'Welke is je favoriet?'},{from:'them',text:'Doi Suthep, het uitzicht is ongelooflijk!'}]}
 ]
 
-function persistAll(){saveData('usersDB',usersDB);saveData('placesDB',PLACES);if(currentUser)saveData('currentUser',currentUser)}
+/* REVIEWS DB */
+let REVIEWS = loadData('reviewsDB', [
+  {id:'r1',placeId:'p1',userId:'u1',rating:5,text:'Beste streetfood ooit! De pad thai op Yaowarat Road is onvergetelijk.',date:'2024-08-12'},
+  {id:'r2',placeId:'p1',userId:'u4',rating:4,text:'Geweldige sfeer, maar druk. Ga vroeg voor de lekkerste hapjes!',date:'2024-09-03'},
+  {id:'r3',placeId:'p3',userId:'u2',rating:5,text:'Maya Bay is adembenemend. Snorkelen hier is een must!',date:'2024-07-20'},
+  {id:'r4',placeId:'p4',userId:'u3',rating:5,text:'Zo vredig! Perfect om tot rust te komen na het werk.',date:'2024-10-01'},
+  {id:'r5',placeId:'p2',userId:'u4',rating:5,text:'Doi Suthep is magisch bij zonsopgang. Neem de trap van 309 treden!',date:'2024-06-18'},
+  {id:'r6',placeId:'p5',userId:'u2',rating:4,text:'Kecak-dans bij zonsondergang is spectaculair. Reserveer vooraf!',date:'2024-11-05'},
+  {id:'r7',placeId:'p6',userId:'u1',rating:5,text:'Kelingking Beach is nog mooier in het echt. Pittige afdaling maar het waard!',date:'2024-10-22'}
+])
+
+function getPlaceRating(placeId){
+  const revs=REVIEWS.filter(r=>r.placeId===placeId)
+  if(!revs.length) return {avg:0,count:0}
+  const avg=revs.reduce((s,r)=>s+r.rating,0)/revs.length
+  return {avg:Math.round(avg*10)/10,count:revs.length}
+}
+function renderStars(rating,interactive=false,prefix=''){
+  let html=''
+  for(let i=1;i<=5;i++){
+    const filled=i<=Math.round(rating)
+    if(interactive){
+      html+=`<span style="cursor:pointer;font-size:20px;color:${filled?'var(--gold)':'rgba(255,255,255,.2)'}" onclick="setStarRating(${i},'${prefix}')" onmouseenter="previewStars(${i},'${prefix}')" onmouseleave="resetStars('${prefix}')">★</span>`
+    } else {
+      html+=`<span style="font-size:16px;color:${filled?'var(--gold)':'rgba(255,255,255,.15)'}">★</span>`
+    }
+  }
+  return `<span class="stars-group" data-prefix="${prefix}">${html}</span>`
+}
+let tempRating=0
+function setStarRating(n){tempRating=n;const el=qs('#selectedRating');if(el)el.textContent=n+'/5'}
+function previewStars(n,prefix){
+  const grp=qs(`.stars-group[data-prefix="${prefix}"]`);if(!grp)return
+  grp.querySelectorAll('span').forEach((s,i)=>s.style.color=i<n?'var(--gold)':'rgba(255,255,255,.2)')
+}
+function resetStars(prefix){
+  const grp=qs(`.stars-group[data-prefix="${prefix}"]`);if(!grp)return
+  grp.querySelectorAll('span').forEach((s,i)=>s.style.color=i<(tempRating||0)?'var(--gold)':'rgba(255,255,255,.2)')
+}
+
+function persistAll(){saveData('usersDB',usersDB);saveData('placesDB',PLACES);saveData('reviewsDB',REVIEWS);if(currentUser)saveData('currentUser',currentUser)}
 
 /* ── Badge System ── */
 const BADGE_DEFS=[
@@ -184,7 +437,9 @@ function updateAuthBar(){
 }
 
 function render(){
+  showProgress()
   const v=qs('#view')
+  const prevBadgeCount=currentUser?getUserBadges(currentUser).length:0
   switch(currentRoute){
     case 'discovery':v.innerHTML=renderDiscovery();break
     case 'swipe':v.innerHTML=renderSwipe();bindSwipe();break
@@ -194,9 +449,20 @@ function render(){
     case 'chats':v.innerHTML=currentChat?renderChatDetail():renderChatList();bindChat();break
     case 'admin':v.innerHTML=renderAdmin();bindAdmin();break
   }
+  setTimeout(hideProgress,400)
+  /* Check for new badges → confetti! */
+  if(currentUser){
+    const newCount=getUserBadges(currentUser).length
+    if(newCount>prevBadgeCount){
+      setTimeout(()=>{spawnConfetti(window.innerWidth/2,window.innerHeight/3,40);toast('🏆 Nieuwe badge verdiend!')},300)
+    }
+  }
 }
 
-/* ── Discovery ── */
+/* ── Scroll-to-Top Button ── */
+const scrollBtn=document.createElement('button');scrollBtn.className='scroll-top';scrollBtn.innerHTML='↑';scrollBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});document.body.appendChild(scrollBtn)
+window.addEventListener('scroll',()=>{scrollBtn.classList.toggle('visible',window.scrollY>300)})
+let discFilter={search:'',tag:'all'}
 function renderDiscovery(){
   let hero = ''
   if(!currentUser){
@@ -216,7 +482,7 @@ function renderDiscovery(){
         <div style="display:flex;justify-content:center;gap:28px;margin-bottom:22px">
           <div><strong style="font-size:22px;color:var(--accent)">${PLACES.length}</strong><br><span class="muted small">Bestemmingen</span></div>
           <div><strong style="font-size:22px;color:var(--success)">${usersDB.length}</strong><br><span class="muted small">Reizigers</span></div>
-          <div><strong style="font-size:22px;color:var(--gold)">6+</strong><br><span class="muted small">Badges</span></div>
+          <div><strong style="font-size:22px;color:var(--gold)">${REVIEWS.length}</strong><br><span class="muted small">Reviews</span></div>
         </div>
         <div class="row" style="justify-content:center;gap:10px">
           <button class="btn btnPrimary" onclick="showAuthModal('register')" style="padding:13px 28px;font-size:15px;font-weight:600">Gratis Aanmelden</button>
@@ -225,18 +491,58 @@ function renderDiscovery(){
       </div>
     </div>`
   }
-  return hero + '<div class="grid">'+PLACES.map(p=>`
-    <div class="card">
-      <img class="placeImg" src="${p.img}" alt="${p.name}" loading="lazy"/>
+  const allTags=[...new Set(PLACES.flatMap(p=>p.tags))]
+  let filtered=[...PLACES]
+  if(discFilter.tag!=='all') filtered=filtered.filter(p=>p.tags.includes(discFilter.tag))
+  if(discFilter.search) filtered=filtered.filter(p=>(p.name+p.loc+p.desc).toLowerCase().includes(discFilter.search.toLowerCase()))
+  if(discSort==='rating') filtered.sort((a,b)=>getPlaceRating(b.id).avg-getPlaceRating(a.id).avg)
+  else if(discSort==='reviews') filtered.sort((a,b)=>getPlaceRating(b.id).count-getPlaceRating(a.id).count)
+  else if(discSort==='name') filtered.sort((a,b)=>a.name.localeCompare(b.name))
+  else if(discSort==='saved') filtered.sort((a,b)=>usersDB.reduce((s,u)=>s+(u.saved.includes(b.id)?1:0),0)-usersDB.reduce((s,u)=>s+(u.saved.includes(a.id)?1:0),0))
+
+  const filterBar=`<div class="card" style="margin-bottom:14px"><div class="cardBd">
+    <div class="row" style="gap:8px;flex-wrap:wrap">
+      <input class="input" placeholder="Zoek bestemmingen…" value="${discFilter.search}" oninput="discFilter.search=this.value;render()" style="flex:1;min-width:180px"/>
+      <select class="input" style="width:auto" onchange="discFilter.tag=this.value;render()">
+        <option value="all">Alle tags</option>
+        ${allTags.map(t=>`<option value="${t}"${discFilter.tag===t?' selected':''}>${t}</option>`).join('')}
+      </select>
+      <select class="input" style="width:auto" onchange="discSort=this.value;render()">
+        <option value="default"${discSort==='default'?' selected':''}>Standaard</option>
+        <option value="rating"${discSort==='rating'?' selected':''}>Hoogste rating</option>
+        <option value="reviews"${discSort==='reviews'?' selected':''}>Meeste reviews</option>
+        <option value="name"${discSort==='name'?' selected':''}>Naam A-Z</option>
+        <option value="saved"${discSort==='saved'?' selected':''}>Populairst</option>
+      </select>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+      ${allTags.map(t=>`<button class="pill small" style="cursor:pointer;${discFilter.tag===t?'background:rgba(255,107,107,.22);border-color:rgba(255,107,107,.55)':''}" onclick="discFilter.tag=discFilter.tag==='${t}'?'all':'${t}';render()">${t}</button>`).join('')}
+    </div>
+    <p class="muted small" style="margin:6px 0 0">${filtered.length} bestemming${filtered.length!==1?'en':''} gevonden</p>
+  </div></div>`
+
+  return hero + filterBar + '<div class="grid">'+filtered.map(p=>{
+    const rat=getPlaceRating(p.id)
+    const revs=REVIEWS.filter(r=>r.placeId===p.id)
+    return `<div class="card stagger-card tilt-card">
+      <img class="placeImg img-shimmer" src="${p.img}" alt="${p.name}" loading="lazy" onload="this.classList.remove('img-shimmer')"/>
       <div class="cardBd">
-        <h3 style="margin:0">${p.name}</h3>
+        <div class="row"><h3 style="margin:0;flex:1">${p.name}</h3>${rat.count?`<span style="white-space:nowrap">${renderStars(rat.avg)} <span class="muted small">${rat.avg} (${rat.count})</span></span>`:''}</div>
         <p class="muted small" style="margin:4px 0">${p.loc} — ${p.tags.map(t=>'<span class="pill small" style="margin-right:4px">'+t+'</span>').join('')}</p>
         <p style="margin:6px 0;font-size:14px">${p.desc}</p>
-        ${currentUser?`<div class="row" style="margin-top:8px">
-          <button class="btn btnPrimary" onclick="toggleSave('${p.id}')">${currentUser.saved.includes(p.id)?'✓ Opgeslagen':'Opslaan'}</button>
-        </div>`:'<p class="muted small">Log in om op te slaan en te swipen</p>'}
+        ${revs.length?`<div style="margin:8px 0;padding:8px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--border)">
+          <span class="muted small">Laatste review:</span>
+          <p style="margin:4px 0;font-size:13px;font-style:italic">"${revs[revs.length-1].text}"</p>
+          <span class="muted small">— ${(usersDB.find(u=>u.id===revs[revs.length-1].userId)||{name:'Onbekend'}).name}</span>
+        </div>`:''}
+        <div class="row" style="margin-top:8px">
+          ${currentUser?`<button class="btn btnPrimary" onclick="toggleSave('${p.id}')">${currentUser.saved.includes(p.id)?'✓ Opgeslagen':'Opslaan'}</button>
+          <button class="btn" onclick="showReviewModal('${p.id}')">★ Review</button>
+          <button class="btn small" onclick="showPlaceReviews('${p.id}')">Alle reviews (${revs.length})</button>`:'<p class="muted small">Log in om op te slaan en reviews te schrijven</p>'}
+        </div>
       </div>
-    </div>`).join('')+'</div>'
+    </div>`
+  }).join('')+'</div>'
 }
 function toggleSave(id){
   if(!currentUser)return toast('Log eerst in!')
@@ -446,6 +752,79 @@ function removePlace(id){
   PLACES.splice(PLACES.findIndex(p=>p.id===id),1);persistAll();toast('Plek verwijderd');render()
 }
 function bindAdmin(){}
+
+/* ── Review Modal ── */
+function showReviewModal(placeId){
+  if(!currentUser){toast('Log eerst in!');return}
+  tempRating=0
+  const place=PLACES.find(p=>p.id===placeId)
+  const mr=qs('#modalRoot')
+  mr.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()" style="animation:fadeIn .25s ease">
+    <div class="modal" style="animation:slideUp .3s ease">
+      <h3 style="margin:0 0 4px">Review voor ${place?place.name:''}</h3>
+      <p class="muted small" style="margin:0 0 14px">${place?place.loc:''}</p>
+      <div style="margin-bottom:12px">
+        <span class="muted small">Jouw rating:</span><br>
+        <span style="margin-top:4px;display:inline-block">${renderStars(0,true,'modal')}</span>
+        <span id="selectedRating" class="muted small" style="margin-left:8px"></span>
+      </div>
+      <textarea class="input" id="reviewText" rows="4" placeholder="Deel je ervaring…" style="margin-bottom:12px"></textarea>
+      <div class="row">
+        <button class="btn btnPrimary" onclick="submitReview('${placeId}')">Verstuur Review</button>
+        <button class="btn" onclick="closeModal()">Annuleren</button>
+      </div>
+    </div></div>`
+}
+function submitReview(placeId){
+  const text=qs('#reviewText').value.trim()
+  if(!tempRating){toast('Selecteer een rating!');return}
+  if(!text){toast('Schrijf een review!');return}
+  const rev={id:uid(),placeId,userId:currentUser.id,rating:tempRating,text,date:new Date().toISOString().slice(0,10)}
+  REVIEWS.push(rev);persistAll();closeModal();toast('Review geplaatst!');tempRating=0;render()
+}
+function showPlaceReviews(placeId){
+  const place=PLACES.find(p=>p.id===placeId)
+  const revs=REVIEWS.filter(r=>r.placeId===placeId)
+  const rat=getPlaceRating(placeId)
+  const mr=qs('#modalRoot')
+  mr.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()" style="animation:fadeIn .25s ease">
+    <div class="modal" style="max-width:520px;max-height:80vh;overflow-y:auto;animation:slideUp .3s ease">
+      <div class="row" style="margin-bottom:14px">
+        <div><h3 style="margin:0">${place?place.name:''}</h3>
+        <span class="muted small">${rat.count} review${rat.count!==1?'s':''} — gemiddeld ${rat.avg}/5 ${renderStars(rat.avg)}</span></div>
+        <div class="spacer"></div>
+        <button class="btn small" onclick="closeModal()">✕</button>
+      </div>
+      ${revs.length?revs.map(r=>{
+        const u=usersDB.find(x=>x.id===r.userId)||{name:'Onbekend',photo:''}
+        return `<div style="padding:12px 0;border-top:1px solid var(--border)">
+          <div class="row"><strong>${u.name}</strong><span class="muted small" style="margin-left:8px">${r.date}</span><div class="spacer"></div>${renderStars(r.rating)}</div>
+          <p style="margin:6px 0 0;font-size:14px">${r.text}</p>
+        </div>`
+      }).join(''):'<p class="muted">Nog geen reviews voor deze plek.</p>'}
+      ${currentUser?`<button class="btn btnPrimary" style="margin-top:12px;width:100%" onclick="closeModal();showReviewModal('${placeId}')">+ Schrijf een review</button>`:''}
+    </div></div>`
+}
+
+/* ── Offline Indicator ── */
+function updateOnlineStatus(){
+  let el=qs('#offlineBanner')
+  if(!navigator.onLine){
+    if(!el){
+      el=document.createElement('div');el.id='offlineBanner'
+      el.style.cssText='position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(231,76,60,.92);color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:600;animation:fadeIn .3s ease'
+      el.textContent='⚠ Je bent offline — sommige functies werken mogelijk niet'
+      document.body.prepend(el)
+    }
+  } else {
+    if(el)el.remove()
+  }
+}
+window.addEventListener('online',updateOnlineStatus)
+window.addEventListener('offline',updateOnlineStatus)
+
+/* ── Discovery Sort ── */
+let discSort='default'
 
 /* ── Boot ── */
 if(loadData('appVersion',0)<3){sessionStorage.removeItem('placesDB');sessionStorage.removeItem('usersDB');sessionStorage.removeItem('currentUser');PLACES=[
