@@ -4,6 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#ff6b6b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="RateMyTrip" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <title>RateMyTrip</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
@@ -72,9 +77,11 @@ function saveData(key,val){sessionStorage.setItem(key,JSON.stringify(val))}
 
 /* USERS DB */
 let usersDB = loadData('usersDB',[
-  {id:'admin',username:'admin',password:'admin123',name:'Admin',age:'',bio:'Beheerder van RateMyTrip',travelerType:'Avonturier',hobbies:['Fotografie'],photo:'',isAdmin:true,saved:[],addedPlaces:[],joinDate:'2024-01-01'},
-  {id:'u1',username:'sarah',password:'sarah123',name:'Sarah',age:'24',bio:'Reisliefhebber en fotograaf',travelerType:'Backpacker',hobbies:['Fotografie','Hiken','Duiken'],photo:'',isAdmin:false,saved:['p1','p4'],addedPlaces:[],joinDate:'2024-01-15'},
-  {id:'u2',username:'marco',password:'marco123',name:'Marco',age:'28',bio:'Altijd op zoek naar het volgende avontuur',travelerType:'Avonturier',hobbies:['Surfen','Nightlife'],photo:'',isAdmin:false,saved:['p3','p5'],addedPlaces:[],joinDate:'2024-03-10'}
+  {id:'admin',username:'admin',password:'admin123',name:'Admin',age:'',bio:'Beheerder van RateMyTrip. Ik zorg dat alles soepel loopt!',travelerType:'Avonturier',hobbies:['Fotografie'],photo:'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',isAdmin:true,saved:[],addedPlaces:[],joinDate:'2024-01-01'},
+  {id:'u1',username:'sarah',password:'sarah123',name:'Sarah de Vries',age:'24',bio:'Reisliefhebber en fotograaf 📸 Al 18 landen bezocht! Altijd op zoek naar verborgen pareltjes en lokale eetplekjes.',travelerType:'Backpacker',hobbies:['Fotografie','Hiken','Duiken','Koken'],photo:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',isAdmin:false,saved:['p1','p4','p2'],addedPlaces:['p1'],joinDate:'2024-01-15'},
+  {id:'u2',username:'marco',password:'marco123',name:'Marco Rossi',age:'28',bio:'Altijd op zoek naar het volgende avontuur 🏄‍♂️ Surfinstructeur en wereldreiziger. Bali is mijn tweede thuis.',travelerType:'Avonturier',hobbies:['Surfen','Nightlife','Yoga','Fotografie'],photo:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',isAdmin:false,saved:['p3','p5','p6'],addedPlaces:['p3'],joinDate:'2024-03-10'},
+  {id:'u3',username:'lisa',password:'lisa123',name:'Lisa van Dam',age:'26',bio:'Digital nomad & yoga lover 🧘‍♀️ Werk vanuit tropische bestemmingen. Momenteel in Chiang Mai!',travelerType:'Digitale nomad',hobbies:['Yoga','Meditatie','Fotografie','Koken'],photo:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',isAdmin:false,saved:['p2','p4','p6'],addedPlaces:[],joinDate:'2024-05-22'},
+  {id:'u4',username:'tom',password:'tom123',name:'Tom Bakker',age:'31',bio:'Cultuurfreak en geschiedenisliefhebber 🏛️ Van tempels tot streetfood, ik wil alles proeven en zien.',travelerType:'Cultuurliefhebber',hobbies:['Geschiedenis','Koken','Fotografie','Fietsen'],photo:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',isAdmin:false,saved:['p1','p2','p5'],addedPlaces:[],joinDate:'2024-06-01'}
 ])
 let currentUser = loadData('currentUser', null)
 
@@ -89,8 +96,10 @@ let PLACES = loadData('placesDB', [
 ])
 
 const CHATS=[
-  {id:'c1',name:'Sarah',avatar:'S',msgs:[{from:'them',text:'Hey! Ben je al in Ubud geweest?'},{from:'me',text:'Nee, staat op mijn lijst!'},{from:'them',text:'De rijstvelden zijn echt magisch!'}]},
-  {id:'c2',name:'Marco',avatar:'M',msgs:[{from:'them',text:'Koh Phi Phi is waanzinnig mooi!'},{from:'me',text:'Graag! Welk seizoen is het best?'}]}
+  {id:'c1',name:'Sarah de Vries',avatar:'S',msgs:[{from:'them',text:'Hey! Ben je al in Ubud geweest?'},{from:'me',text:'Nee, staat op mijn lijst!'},{from:'them',text:'De rijstvelden zijn echt magisch! 🌾'},{from:'them',text:'Tip: ga vroeg in de ochtend, dan heb je het voor jezelf!'}]},
+  {id:'c2',name:'Marco Rossi',avatar:'M',msgs:[{from:'them',text:'Koh Phi Phi is waanzinnig mooi!'},{from:'me',text:'Graag! Welk seizoen is het best?'},{from:'them',text:'November-april, droog seizoen. Perfect surfweer! 🏄‍♂️'}]},
+  {id:'c3',name:'Lisa van Dam',avatar:'L',msgs:[{from:'them',text:'Hoi! Ik zit nu in Chiang Mai, geweldige plek om te werken!'},{from:'me',text:'Welk coworking space raad je aan?'},{from:'them',text:'Punspace is top! Goede wifi en leuke community.'}]},
+  {id:'c4',name:'Tom Bakker',avatar:'T',msgs:[{from:'them',text:'Die tempels in Chiang Mai zijn echt indrukwekkend'},{from:'me',text:'Welke is je favoriet?'},{from:'them',text:'Doi Suthep, het uitzicht is ongelooflijk!'}]}
 ]
 
 function persistAll(){saveData('usersDB',usersDB);saveData('placesDB',PLACES);if(currentUser)saveData('currentUser',currentUser)}
@@ -191,20 +200,27 @@ function render(){
 function renderDiscovery(){
   let hero = ''
   if(!currentUser){
-    hero = `<div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(255,107,107,.18),rgba(46,204,113,.10));border-color:rgba(255,107,107,.3)">
-      <div class="cardBd" style="text-align:center;padding:28px 20px">
-        <h2 style="margin:0 0 8px;font-size:26px">Ontdek de mooiste plekken</h2>
-        <p class="muted" style="margin:0 0 16px;font-size:15px">Swipe, bewaar en deel jouw favoriete reisbestemmingen met de community.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:18px">
-          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">🗺️</span><br><strong style="font-size:13px">Discovery</strong><br><span class="muted small">Bekijk bestemmingen</span></div>
-          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">👆</span><br><strong style="font-size:13px">Swipe</strong><br><span class="muted small">Like of skip</span></div>
-          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">🌍</span><br><strong style="font-size:13px">Kaart</strong><br><span class="muted small">Bekijk op de kaart</span></div>
-          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">👥</span><br><strong style="font-size:13px">Community</strong><br><span class="muted small">Ontmoet reizigers</span></div>
-          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">💬</span><br><strong style="font-size:13px">Chat</strong><br><span class="muted small">Plan samen</span></div>
+    hero = `<div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(255,107,107,.18),rgba(46,204,113,.10),rgba(52,152,219,.10));border-color:rgba(255,107,107,.3)">
+      <div class="cardBd" style="text-align:center;padding:34px 20px">
+        <div style="font-size:42px;margin-bottom:6px">✈️</div>
+        <h2 style="margin:0 0 8px;font-size:28px;letter-spacing:-.3px">Ontdek de mooiste plekken ter wereld</h2>
+        <p class="muted" style="margin:0 0 20px;font-size:15px;max-width:480px;margin-left:auto;margin-right:auto">Swipe door bestemmingen, bewaar je favorieten, bekijk alles op de kaart en deel ervaringen met de community.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:22px">
+          <div style="text-align:center;padding:14px 18px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--border);min-width:100px"><span style="font-size:30px">🗺️</span><br><strong style="font-size:13px">Discovery</strong><br><span class="muted small">Bekijk bestemmingen</span></div>
+          <div style="text-align:center;padding:14px 18px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--border);min-width:100px"><span style="font-size:30px">👆</span><br><strong style="font-size:13px">Swipe</strong><br><span class="muted small">Like of skip</span></div>
+          <div style="text-align:center;padding:14px 18px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--border);min-width:100px"><span style="font-size:30px">🌍</span><br><strong style="font-size:13px">Kaart</strong><br><span class="muted small">Interactieve kaart</span></div>
+          <div style="text-align:center;padding:14px 18px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--border);min-width:100px"><span style="font-size:30px">👥</span><br><strong style="font-size:13px">Community</strong><br><span class="muted small">Ontmoet reizigers</span></div>
+          <div style="text-align:center;padding:14px 18px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--border);min-width:100px"><span style="font-size:30px">💬</span><br><strong style="font-size:13px">Chat</strong><br><span class="muted small">Plan samen</span></div>
+          <div style="text-align:center;padding:14px 18px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--border);min-width:100px"><span style="font-size:30px">🏆</span><br><strong style="font-size:13px">Badges</strong><br><span class="muted small">Verdien beloningen</span></div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:28px;margin-bottom:22px">
+          <div><strong style="font-size:22px;color:var(--accent)">${PLACES.length}</strong><br><span class="muted small">Bestemmingen</span></div>
+          <div><strong style="font-size:22px;color:var(--success)">${usersDB.length}</strong><br><span class="muted small">Reizigers</span></div>
+          <div><strong style="font-size:22px;color:var(--gold)">6+</strong><br><span class="muted small">Badges</span></div>
         </div>
         <div class="row" style="justify-content:center;gap:10px">
-          <button class="btn btnPrimary" onclick="showAuthModal('register')" style="padding:12px 24px;font-size:15px">Gratis Aanmelden</button>
-          <button class="btn" onclick="showAuthModal('login')">Inloggen</button>
+          <button class="btn btnPrimary" onclick="showAuthModal('register')" style="padding:13px 28px;font-size:15px;font-weight:600">Gratis Aanmelden</button>
+          <button class="btn" onclick="showAuthModal('login')" style="padding:13px 20px">Inloggen</button>
         </div>
       </div>
     </div>`
@@ -432,15 +448,24 @@ function removePlace(id){
 function bindAdmin(){}
 
 /* ── Boot ── */
-if(loadData('appVersion',0)<2){sessionStorage.removeItem('placesDB');PLACES=[
+if(loadData('appVersion',0)<3){sessionStorage.removeItem('placesDB');sessionStorage.removeItem('usersDB');sessionStorage.removeItem('currentUser');PLACES=[
   {id:'p1',name:'Bangkok Street Food',loc:'Thailand',lat:13.7563,lng:100.5018,img:'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=380&fit=crop',tags:['eten','cultuur'],desc:'Proef pad thai, mango sticky rice en tom yum op de bruisende nachtmarkten.',addedBy:'admin'},
   {id:'p2',name:'Chiang Mai Tempels',loc:'Thailand',lat:18.7883,lng:98.9853,img:'https://images.unsplash.com/photo-1528181304800-259b08848526?w=600&h=380&fit=crop',tags:['cultuur','natuur'],desc:'Gouden tempels in de bergen, nachtbazaars en olifantenopvang.',addedBy:'admin'},
   {id:'p3',name:'Koh Phi Phi',loc:'Thailand',lat:7.7407,lng:98.7784,img:'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&h=380&fit=crop',tags:['strand','avontuur'],desc:'Kristalhelder water, kalksteenrotsen en de beroemde Maya Bay.',addedBy:'admin'},
   {id:'p4',name:'Ubud Rijstvelden',loc:'Bali',lat:-8.5069,lng:115.2625,img:'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&h=380&fit=crop',tags:['natuur','cultuur'],desc:'Tegallalang rijstterrassen, apenbos en yoga-retreats.',addedBy:'admin'},
   {id:'p5',name:'Uluwatu Kliffen',loc:'Bali',lat:-8.8291,lng:115.0849,img:'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&h=380&fit=crop',tags:['strand','romantisch'],desc:'Spectaculaire klifftempel boven de oceaan met kecak-dans bij zonsondergang.',addedBy:'admin'},
   {id:'p6',name:'Nusa Penida',loc:'Bali',lat:-8.7275,lng:115.5444,img:'https://images.unsplash.com/photo-1570789210967-2cac24571b8c?w=600&h=380&fit=crop',tags:['avontuur','strand'],desc:'Kelingking Beach, manta rays en ongerepte natuur.',addedBy:'admin'}
-];saveData('placesDB',PLACES);saveData('appVersion',2)}
+];saveData('placesDB',PLACES);saveData('appVersion',3)}
 updateAuthBar();updateNav();render()
+
+/* ── Service Worker Registration ── */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg=>console.log('SW registered, scope:',reg.scope))
+      .catch(err=>console.warn('SW registration failed:',err))
+  })
+}
 </script>
 </body>
 </html>
