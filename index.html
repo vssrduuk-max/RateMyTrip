@@ -4,18 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#ff6b6b" />
-  <meta name="description" content="Community-gedreven reisaanbevelingen met swipe, kaart en chat." />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Travel MVP" />
-  <meta property="og:description" content="Vind reis-tips van gelijkgestemden. Swipe, kaart en chat." />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <title>Travel MVP</title>
-
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
+  <title>RateMyTrip</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <style>
-    :root{--bg:#0b1220;--muted:#9ab0cf;--text:#eaf2ff;--accent:#ff6b6b;--border:rgba(255,255,255,.10);--shadow:0 14px 40px rgba(0,0,0,.38)}
+    :root{--bg:#0b1220;--muted:#9ab0cf;--text:#eaf2ff;--accent:#ff6b6b;--border:rgba(255,255,255,.10);--shadow:0 14px 40px rgba(0,0,0,.38);--success:#2ecc71;--gold:#f1c40f}
     *{box-sizing:border-box}html,body{height:100%}
     body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);
       background:radial-gradient(1000px 700px at 10% -10%, rgba(255,107,107,.26), transparent 62%),var(--bg)}
@@ -33,210 +26,421 @@
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.spacer{flex:1}
     .btn{border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);padding:10px 12px;border-radius:14px;cursor:pointer}
     .btnPrimary{background:rgba(255,107,107,.18);border-color:rgba(255,107,107,.55)}
+    .btnSuccess{background:rgba(46,204,113,.18);border-color:rgba(46,204,113,.55)}
     .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.03)}
     .input{width:100%;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(0,0,0,.18);color:var(--text)}
     .grid{display:grid;grid-template-columns:1fr;gap:14px}@media(min-width:900px){.grid{grid-template-columns:1.2fr .8fr}}
     .placeImg{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:rgba(255,255,255,.04)}
     .toast{position:fixed;left:16px;right:16px;bottom:16px;max-width:560px;margin:0 auto;padding:12px 14px;border-radius:16px;border:1px solid var(--border);background:rgba(18,26,42,.92);box-shadow:var(--shadow)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+    .modal{background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:24px;max-width:440px;width:100%;box-shadow:var(--shadow)}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid}
+    .badge-gold{background:rgba(241,196,15,.15);border-color:rgba(241,196,15,.5);color:#f1c40f}
+    .badge-silver{background:rgba(189,195,199,.15);border-color:rgba(189,195,199,.5);color:#bdc3c7}
+    .badge-bronze{background:rgba(205,127,50,.15);border-color:rgba(205,127,50,.5);color:#cd7f32}
+    .badge-special{background:rgba(155,89,182,.15);border-color:rgba(155,89,182,.5);color:#9b59b6}
+    .tab-bar{display:flex;gap:6px;margin-bottom:14px}.tab-bar button{flex:1}
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="container">
       <div class="hero">
-        <div class="brand" aria-label="Travel MVP">
-          <div class="logo" aria-hidden="true"></div>
-          <div>
-            <div style="font-weight:900;letter-spacing:.2px">Travel MVP</div>
-            <div class="muted small">Discovery • Swipe • Kaart • Profiel • Chat • PWA</div>
-          </div>
+        <div class="brand"><div class="logo"></div>
+          <div><div style="font-weight:900;letter-spacing:.2px">RateMyTrip</div>
+            <div class="muted small">Discovery • Swipe • Kaart • Profiel • Community</div></div>
         </div>
-        <div class="row"><span id="authState" class="pill small">Hallo, Gast</span></div>
+        <div class="row" id="authBar"><!-- filled by JS --></div>
       </div>
-      <nav class="nav" aria-label="Hoofdnavigatie">
-        <button data-route="discovery" aria-current="page">Discovery</button>
-        <button data-route="swipe">Swipe</button>
-        <button data-route="map">Kaart</button>
-        <button data-route="profile">Profiel</button>
-        <button data-route="chats">Chats</button>
-      </nav>
+      <nav class="nav" id="mainNav"></nav>
     </div>
   </header>
-
-  <main class="container" style="padding-top:16px">
-    <div id="view"></div>
-  </main>
-
-  <div id="toast" class="toast" role="status" aria-live="polite" style="display:none"></div>
+  <main class="container" style="padding-top:16px"><div id="view"></div></main>
+  <div id="toast" class="toast" role="status" style="display:none"></div>
   <div id="modalRoot"></div>
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}) })
-    }
+<script>
+/* ── Helpers ── */
+const qs=(s,el=document)=>el.querySelector(s)
+const qsa=(s,el=document)=>[...el.querySelectorAll(s)]
+const uid=()=>Math.random().toString(16).slice(2)+Date.now().toString(16)
+function toast(msg){const el=qs('#toast');el.textContent=msg;el.style.display='block';clearTimeout(window.__t);window.__t=setTimeout(()=>el.style.display='none',3200)}
 
-    const qs = (s, el=document) => el.querySelector(s)
-    const qsa = (s, el=document) => [...el.querySelectorAll(s)]
-    const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16)
+/* ── Data Store (sessionStorage) ── */
+function loadData(key,fallback){try{const v=sessionStorage.getItem(key);return v?JSON.parse(v):fallback}catch(e){return fallback}}
+function saveData(key,val){sessionStorage.setItem(key,JSON.stringify(val))}
 
-    function toast(msg){
-      const el = qs('#toast')
-      el.textContent = msg
-      el.style.display = 'block'
-      clearTimeout(window.__toastTimer)
-      window.__toastTimer = setTimeout(() => { el.style.display = 'none' }, 3200)
-    }
+/* USERS DB */
+let usersDB = loadData('usersDB',[
+  {id:'admin',username:'admin',password:'admin123',name:'Admin',age:'',bio:'Beheerder van RateMyTrip',travelerType:'Avonturier',hobbies:['Fotografie'],photo:'',isAdmin:true,saved:[],addedPlaces:[],joinDate:'2024-01-01'},
+  {id:'u1',username:'sarah',password:'sarah123',name:'Sarah',age:'24',bio:'Reisliefhebber en fotograaf',travelerType:'Backpacker',hobbies:['Fotografie','Hiken','Duiken'],photo:'',isAdmin:false,saved:['p1','p4'],addedPlaces:[],joinDate:'2024-01-15'},
+  {id:'u2',username:'marco',password:'marco123',name:'Marco',age:'28',bio:'Altijd op zoek naar het volgende avontuur',travelerType:'Avonturier',hobbies:['Surfen','Nightlife'],photo:'',isAdmin:false,saved:['p3','p5'],addedPlaces:[],joinDate:'2024-03-10'}
+])
+let currentUser = loadData('currentUser', null)
 
-    /* ── Mock Data ── */
-    const PLACES = [
-      {id:'p1',name:'Santorini Sunset',loc:'Griekenland',lat:36.3932,lng:25.4615,img:'https://placehold.co/600x380/264653/eaf2ff?text=Santorini',tags:['strand','romantisch'],desc:'Iconische witte huisjes en een ongelooflijke zonsondergang boven de caldera.'},
-      {id:'p2',name:'Kyoto Temples',loc:'Japan',lat:35.0116,lng:135.7681,img:'https://placehold.co/600x380/2a9d8f/eaf2ff?text=Kyoto',tags:['cultuur','natuur'],desc:'Duizenden torii-poorten, bamboo-bossen en serene theehuizen.'},
-      {id:'p3',name:'Banff National Park',loc:'Canada',lat:51.4968,lng:-115.9281,img:'https://placehold.co/600x380/e76f51/eaf2ff?text=Banff',tags:['avontuur','bergen'],desc:'Turkooizen meren omringd door de Canadese Rocky Mountains.'},
-      {id:'p4',name:'Marrakech Medina',loc:'Marokko',lat:31.6295,lng:-7.9811,img:'https://placehold.co/600x380/e9c46a/264653?text=Marrakech',tags:['cultuur','eten'],desc:'Levendige souks, specerijen en riads met verborgen binnenplaatsen.'},
-      {id:'p5',name:'Amalfi Coast',loc:'Italië',lat:40.6333,lng:14.6029,img:'https://placehold.co/600x380/f4a261/264653?text=Amalfi',tags:['strand','eten'],desc:'Kleurrijke dorpjes geplakt op kliffen boven de azuurblauwe zee.'},
-      {id:'p6',name:'Reykjavik & Golden Circle',loc:'IJsland',lat:64.1466,lng:-21.9426,img:'https://placehold.co/600x380/457b9d/eaf2ff?text=IJsland',tags:['avontuur','natuur'],desc:'Geisers, watervallen en het noorderlicht in één reis.'},
-    ]
+/* PLACES DB */
+let PLACES = loadData('placesDB', [
+  {id:'p1',name:'Bangkok Street Food',loc:'Thailand',lat:13.7563,lng:100.5018,img:'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=380&fit=crop',tags:['eten','cultuur'],desc:'Proef pad thai, mango sticky rice en tom yum op de bruisende nachtmarkten.',addedBy:'admin'},
+  {id:'p2',name:'Chiang Mai Tempels',loc:'Thailand',lat:18.7883,lng:98.9853,img:'https://images.unsplash.com/photo-1528181304800-259b08848526?w=600&h=380&fit=crop',tags:['cultuur','natuur'],desc:'Gouden tempels in de bergen, nachtbazaars en olifantenopvang.',addedBy:'admin'},
+  {id:'p3',name:'Koh Phi Phi',loc:'Thailand',lat:7.7407,lng:98.7784,img:'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&h=380&fit=crop',tags:['strand','avontuur'],desc:'Kristalhelder water, kalksteenrotsen en de beroemde Maya Bay.',addedBy:'admin'},
+  {id:'p4',name:'Ubud Rijstvelden',loc:'Bali',lat:-8.5069,lng:115.2625,img:'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&h=380&fit=crop',tags:['natuur','cultuur'],desc:'Tegallalang rijstterrassen, apenbos en yoga-retreats.',addedBy:'admin'},
+  {id:'p5',name:'Uluwatu Kliffen',loc:'Bali',lat:-8.8291,lng:115.0849,img:'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&h=380&fit=crop',tags:['strand','romantisch'],desc:'Spectaculaire klifftempel boven de oceaan met kecak-dans bij zonsondergang.',addedBy:'admin'},
+  {id:'p6',name:'Nusa Penida',loc:'Bali',lat:-8.7275,lng:115.5444,img:'https://images.unsplash.com/photo-1570789210967-2cac24571b8c?w=600&h=380&fit=crop',tags:['avontuur','strand'],desc:'Kelingking Beach, manta rays en ongerepte natuur.',addedBy:'admin'}
+])
 
-    const CHATS = [
-      {id:'c1',name:'Sarah',avatar:'S',msgs:[{from:'them',text:'Hey! Ben je al in Kyoto geweest?'},{from:'me',text:'Nee, staat op mijn lijst!'},{from:'them',text:'Je moet zeker Fushimi Inari doen, het is magisch.'}]},
-      {id:'c2',name:'Marco',avatar:'M',msgs:[{from:'them',text:'Amalfi is prachtig, laat je tips sturen!'},{from:'me',text:'Graag! Welk seizoen is het best?'}]},
-    ]
+const CHATS=[
+  {id:'c1',name:'Sarah',avatar:'S',msgs:[{from:'them',text:'Hey! Ben je al in Ubud geweest?'},{from:'me',text:'Nee, staat op mijn lijst!'},{from:'them',text:'De rijstvelden zijn echt magisch!'}]},
+  {id:'c2',name:'Marco',avatar:'M',msgs:[{from:'them',text:'Koh Phi Phi is waanzinnig mooi!'},{from:'me',text:'Graag! Welk seizoen is het best?'}]}
+]
 
-    let saved = JSON.parse(sessionStorage.getItem('saved')||'[]')
-    let currentRoute = 'discovery'
-    let swipeIdx = 0
-    let currentChat = null
+function persistAll(){saveData('usersDB',usersDB);saveData('placesDB',PLACES);if(currentUser)saveData('currentUser',currentUser)}
 
-    function persist(){ sessionStorage.setItem('saved', JSON.stringify(saved)) }
+/* ── Badge System ── */
+const BADGE_DEFS=[
+  {id:'early_adopter',name:'Early Adopter',icon:'🌟',cls:'badge-gold',desc:'Bij de eerste gebruikers!',check:u=>true},
+  {id:'explorer_5',name:'Ontdekker',icon:'🧭',cls:'badge-silver',desc:'5 plekken opgeslagen',check:u=>u.saved.length>=5},
+  {id:'explorer_10',name:'Wereldreiziger',icon:'🌍',cls:'badge-gold',desc:'10 plekken opgeslagen',check:u=>u.saved.length>=10},
+  {id:'contributor_1',name:'Bijdrager',icon:'📍',cls:'badge-bronze',desc:'1 plek toegevoegd',check:u=>u.addedPlaces.length>=1},
+  {id:'contributor_5',name:'Gids',icon:'🗺️',cls:'badge-silver',desc:'5 plekken toegevoegd',check:u=>u.addedPlaces.length>=5},
+  {id:'contributor_10',name:'Expert Gids',icon:'🏆',cls:'badge-gold',desc:'10 plekken toegevoegd',check:u=>u.addedPlaces.length>=10},
+  {id:'social',name:'Sociaal',icon:'💬',cls:'badge-special',desc:'Actief in de community',check:u=>true},
+  {id:'admin_badge',name:'Beheerder',icon:'⚙️',cls:'badge-special',desc:'App beheerder',check:u=>u.isAdmin}
+]
+function getUserBadges(user){return BADGE_DEFS.filter(b=>b.check(user))}
+function renderBadges(user){
+  const badges=getUserBadges(user)
+  if(!badges.length) return '<span class="muted small">Nog geen badges</span>'
+  return badges.map(b=>`<span class="badge ${b.cls}" title="${b.desc}">${b.icon} ${b.name}</span>`).join(' ')
+}
 
-    /* ── Router ── */
-    function go(route){
-      currentRoute = route
-      qsa('.nav button').forEach(b => b.setAttribute('aria-current', b.dataset.route === route ? 'page' : 'false'))
-      render()
-    }
-    qsa('.nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.route)))
+/* ── Auth ── */
+function showAuthModal(mode){
+  const mr=qs('#modalRoot')
+  mr.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h3 style="margin:0 0 14px">${mode==='login'?'Inloggen':'Account Aanmaken'}</h3>
+      <input class="input" id="authUser" placeholder="Gebruikersnaam" style="margin-bottom:10px"/>
+      <input class="input" id="authPass" type="password" placeholder="Wachtwoord" style="margin-bottom:10px"/>
+      ${mode==='register'?'<input class="input" id="authName" placeholder="Weergavenaam" style="margin-bottom:10px"/>':''}
+      <div id="authError" style="color:var(--accent);font-size:13px;margin-bottom:8px"></div>
+      <div class="row">
+        <button class="btn btnPrimary" onclick="${mode==='login'?'doLogin()':'doRegister()'}">${mode==='login'?'Inloggen':'Registreren'}</button>
+        <button class="btn" onclick="closeModal()">Annuleren</button>
+        <div class="spacer"></div>
+        <button class="btn small muted" onclick="closeModal();showAuthModal('${mode==='login'?'register':'login'}')">${mode==='login'?'Nog geen account?':'Al een account?'}</button>
+      </div>
+    </div></div>`
+}
+function closeModal(){qs('#modalRoot').innerHTML=''}
+function doLogin(){
+  const username=qs('#authUser').value.trim().toLowerCase(),pass=qs('#authPass').value
+  if(!username||!pass){qs('#authError').textContent='Vul alle velden in';return}
+  const user=usersDB.find(u=>u.username===username&&u.password===pass)
+  if(!user){qs('#authError').textContent='Onjuiste gebruikersnaam of wachtwoord';return}
+  currentUser=user;saveData('currentUser',currentUser);closeModal();toast('Welkom terug, '+user.name+'!');updateAuthBar();updateNav();render()
+}
+function doRegister(){
+  const username=qs('#authUser').value.trim().toLowerCase(),pass=qs('#authPass').value,name=qs('#authName').value.trim()
+  if(!username||!pass||!name){qs('#authError').textContent='Vul alle velden in';return}
+  if(username.length<3){qs('#authError').textContent='Gebruikersnaam min. 3 tekens';return}
+  if(pass.length<4){qs('#authError').textContent='Wachtwoord min. 4 tekens';return}
+  if(usersDB.find(u=>u.username===username)){qs('#authError').textContent='Gebruikersnaam al bezet';return}
+  const user={id:uid(),username,password:pass,name,age:'',bio:'',travelerType:'Backpacker',hobbies:[],photo:'',isAdmin:false,saved:[],addedPlaces:[],joinDate:new Date().toISOString().slice(0,10)}
+  usersDB.push(user);currentUser=user;persistAll();closeModal();toast('Account aangemaakt! Welkom, '+name+'!');updateAuthBar();updateNav();render()
+}
+function logout(){currentUser=null;sessionStorage.removeItem('currentUser');toast('Uitgelogd');updateAuthBar();updateNav();go('discovery')}
 
-    /* ── Renderers ── */
-    function render(){
-      const v = qs('#view')
-      switch(currentRoute){
-        case 'discovery': v.innerHTML = renderDiscovery(); break
-        case 'swipe': v.innerHTML = renderSwipe(); bindSwipe(); break
-        case 'map': v.innerHTML = '<div id="mapEl" style="height:70vh;border-radius:18px;overflow:hidden;border:1px solid var(--border)"></div>'; initMap(); break
-        case 'profile': v.innerHTML = renderProfile(); break
-        case 'chats': v.innerHTML = currentChat ? renderChatDetail() : renderChatList(); bindChat(); break
-      }
-    }
+/* ── Router ── */
+let currentRoute='discovery', swipeIdx=0, currentChat=null, profileEdit=false, viewingUser=null
 
-    /* Discovery */
-    function renderDiscovery(){
-      return '<div class="grid">' + PLACES.map(p => `
-        <div class="card">
-          <img class="placeImg" src="${p.img}" alt="${p.name}" loading="lazy"/>
-          <div class="cardBd">
-            <h3 style="margin:0">${p.name}</h3>
-            <p class="muted small" style="margin:4px 0">${p.loc} — ${p.tags.map(t=>'<span class="pill small" style="margin-right:4px">'+t+'</span>').join('')}</p>
-            <p style="margin:6px 0;font-size:14px">${p.desc}</p>
-            <div class="row" style="margin-top:8px">
-              <button class="btn btnPrimary" onclick="toggleSave('${p.id}')">${saved.includes(p.id)?'✓ Opgeslagen':'Opslaan'}</button>
-            </div>
-          </div>
-        </div>`).join('') + '</div>'
-    }
-    function toggleSave(id){
-      if(saved.includes(id)){saved=saved.filter(s=>s!==id);toast('Verwijderd')}else{saved.push(id);toast('Opgeslagen!')}
-      persist(); render()
-    }
+function go(route){currentRoute=route;viewingUser=null;profileEdit=false;currentChat=null;updateNav();render()}
 
-    /* Swipe */
-    function renderSwipe(){
-      const p = PLACES[swipeIdx % PLACES.length]
-      return `<div class="card" style="max-width:420px;margin:0 auto">
-        <img class="placeImg" src="${p.img}" alt="${p.name}"/>
-        <div class="cardBd" style="text-align:center">
-          <h3 style="margin:0">${p.name}</h3>
-          <p class="muted small">${p.loc}</p>
-          <p style="font-size:14px">${p.desc}</p>
-          <div class="row" style="justify-content:center;margin-top:12px">
-            <button class="btn" id="swipeLeft" style="font-size:22px;padding:10px 20px">✗</button>
-            <button class="btn btnPrimary" id="swipeRight" style="font-size:22px;padding:10px 20px">♥</button>
-          </div>
-          <p class="muted small" style="margin-top:8px">${swipeIdx+1} / ${PLACES.length}</p>
+function updateNav(){
+  const nav=qs('#mainNav')
+  const routes=currentUser
+    ? [{r:'discovery',l:'Discovery'},{r:'swipe',l:'Swipe'},{r:'map',l:'Kaart'},{r:'profile',l:'Profiel'},{r:'community',l:'Community'},{r:'chats',l:'Chats'}]
+    : [{r:'discovery',l:'Discovery'},{r:'map',l:'Kaart'}]
+  if(currentUser&&currentUser.isAdmin) routes.push({r:'admin',l:'⚙ Admin'})
+  nav.innerHTML=routes.map(x=>`<button data-route="${x.r}" aria-current="${x.r===currentRoute?'page':'false'}">${x.l}</button>`).join('')
+  qsa('button[data-route]',nav).forEach(b=>b.addEventListener('click',()=>go(b.dataset.route)))
+}
+
+function updateAuthBar(){
+  const bar=qs('#authBar')
+  if(currentUser){
+    bar.innerHTML=`<span class="pill small">Hallo, ${currentUser.name}</span><button class="btn small" onclick="logout()">Uitloggen</button>`
+  } else {
+    bar.innerHTML=`<button class="btn small btnPrimary" onclick="showAuthModal('login')">Inloggen</button><button class="btn small" onclick="showAuthModal('register')">Registreren</button>`
+  }
+}
+
+function render(){
+  const v=qs('#view')
+  switch(currentRoute){
+    case 'discovery':v.innerHTML=renderDiscovery();break
+    case 'swipe':v.innerHTML=renderSwipe();bindSwipe();break
+    case 'map':v.innerHTML='<div id="mapEl" style="height:70vh;border-radius:18px;overflow:hidden;border:1px solid var(--border)"></div>';initMap();break
+    case 'profile':v.innerHTML=renderProfile();break
+    case 'community':v.innerHTML=renderCommunity();break
+    case 'chats':v.innerHTML=currentChat?renderChatDetail():renderChatList();bindChat();break
+    case 'admin':v.innerHTML=renderAdmin();bindAdmin();break
+  }
+}
+
+/* ── Discovery ── */
+function renderDiscovery(){
+  let hero = ''
+  if(!currentUser){
+    hero = `<div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(255,107,107,.18),rgba(46,204,113,.10));border-color:rgba(255,107,107,.3)">
+      <div class="cardBd" style="text-align:center;padding:28px 20px">
+        <h2 style="margin:0 0 8px;font-size:26px">Ontdek de mooiste plekken</h2>
+        <p class="muted" style="margin:0 0 16px;font-size:15px">Swipe, bewaar en deel jouw favoriete reisbestemmingen met de community.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:18px">
+          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">🗺️</span><br><strong style="font-size:13px">Discovery</strong><br><span class="muted small">Bekijk bestemmingen</span></div>
+          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">👆</span><br><strong style="font-size:13px">Swipe</strong><br><span class="muted small">Like of skip</span></div>
+          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">🌍</span><br><strong style="font-size:13px">Kaart</strong><br><span class="muted small">Bekijk op de kaart</span></div>
+          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">👥</span><br><strong style="font-size:13px">Community</strong><br><span class="muted small">Ontmoet reizigers</span></div>
+          <div style="text-align:center;padding:12px 16px"><span style="font-size:28px">💬</span><br><strong style="font-size:13px">Chat</strong><br><span class="muted small">Plan samen</span></div>
         </div>
-      </div>`
-    }
-    function bindSwipe(){
-      const l=qs('#swipeLeft'),r=qs('#swipeRight')
-      if(l) l.onclick=()=>{swipeIdx++;toast('Overgeslagen');render()}
-      if(r) r.onclick=()=>{const p=PLACES[swipeIdx%PLACES.length];if(!saved.includes(p.id)){saved.push(p.id);persist()};swipeIdx++;toast('Liked & opgeslagen!');render()}
-    }
-
-    /* Map */
-    function initMap(){
-      setTimeout(()=>{
-        const m = L.map('mapEl').setView([40,10],3)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(m)
-        PLACES.forEach(p=>{
-          L.marker([p.lat,p.lng]).addTo(m).bindPopup(`<strong>${p.name}</strong><br>${p.loc}<br><em>${p.desc.slice(0,80)}…</em>`)
-        })
-      },80)
-    }
-
-    /* Profile */
-    function renderProfile(){
-      const s = PLACES.filter(p=>saved.includes(p.id))
-      return `<div class="card" style="max-width:520px">
-        <div class="cardBd">
-          <h3 style="margin:0">Mijn Profiel</h3>
-          <p class="muted small">Demo-gebruiker • ${saved.length} opgeslagen bestemmingen</p>
-          <hr style="border-color:var(--border)"/>
-          <h4 style="margin:10px 0 6px">Opgeslagen bestemmingen</h4>
-          ${s.length?s.map(p=>`<div class="row" style="margin-bottom:8px"><img src="${p.img}" style="width:60px;height:40px;object-fit:cover;border-radius:8px"/><div><strong>${p.name}</strong><br><span class="muted small">${p.loc}</span></div><div class="spacer"></div><button class="btn small" onclick="toggleSave('${p.id}')">✗</button></div>`).join(''):'<p class="muted small">Nog niets opgeslagen. Ga naar Discovery of Swipe!</p>'}
+        <div class="row" style="justify-content:center;gap:10px">
+          <button class="btn btnPrimary" onclick="showAuthModal('register')" style="padding:12px 24px;font-size:15px">Gratis Aanmelden</button>
+          <button class="btn" onclick="showAuthModal('login')">Inloggen</button>
         </div>
-      </div>`
-    }
+      </div>
+    </div>`
+  }
+  return hero + '<div class="grid">'+PLACES.map(p=>`
+    <div class="card">
+      <img class="placeImg" src="${p.img}" alt="${p.name}" loading="lazy"/>
+      <div class="cardBd">
+        <h3 style="margin:0">${p.name}</h3>
+        <p class="muted small" style="margin:4px 0">${p.loc} — ${p.tags.map(t=>'<span class="pill small" style="margin-right:4px">'+t+'</span>').join('')}</p>
+        <p style="margin:6px 0;font-size:14px">${p.desc}</p>
+        ${currentUser?`<div class="row" style="margin-top:8px">
+          <button class="btn btnPrimary" onclick="toggleSave('${p.id}')">${currentUser.saved.includes(p.id)?'✓ Opgeslagen':'Opslaan'}</button>
+        </div>`:'<p class="muted small">Log in om op te slaan en te swipen</p>'}
+      </div>
+    </div>`).join('')+'</div>'
+}
+function toggleSave(id){
+  if(!currentUser)return toast('Log eerst in!')
+  const i=currentUser.saved.indexOf(id)
+  if(i>=0){currentUser.saved.splice(i,1);toast('Verwijderd')}else{currentUser.saved.push(id);toast('Opgeslagen!')}
+  const u=usersDB.find(x=>x.id===currentUser.id);if(u)u.saved=currentUser.saved
+  persistAll();render()
+}
 
-    /* Chats */
-    function renderChatList(){
-      currentChat=null
-      return `<div class="card" style="max-width:520px"><div class="cardBd">
-        <h3 style="margin:0 0 10px">Chats</h3>
-        ${CHATS.map(c=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="currentChat='${c.id}';render()">
-          <div style="width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700">${c.avatar}</div>
-          <div><strong>${c.name}</strong><br><span class="muted small">${c.msgs[c.msgs.length-1].text.slice(0,40)}…</span></div>
-        </div>`).join('')}
-      </div></div>`
-    }
-    function renderChatDetail(){
-      const c = CHATS.find(x=>x.id===currentChat)
-      if(!c) return renderChatList()
-      return `<div class="card" style="max-width:520px"><div class="cardBd">
-        <div class="row"><button class="btn small" onclick="currentChat=null;render()">← Terug</button><strong style="margin-left:8px">${c.name}</strong></div>
-        <div style="margin:12px 0;max-height:50vh;overflow-y:auto">
-          ${c.msgs.map(m=>`<div style="text-align:${m.from==='me'?'right':'left'};margin:6px 0">
-            <span style="display:inline-block;padding:8px 12px;border-radius:14px;max-width:80%;background:${m.from==='me'?'rgba(255,107,107,.18)':'rgba(255,255,255,.06)'}">${m.text}</span>
-          </div>`).join('')}
+/* ── Swipe ── */
+function renderSwipe(){
+  if(!currentUser) return '<div class="card"><div class="cardBd"><p>Log in om te swipen!</p><button class="btn btnPrimary" onclick="showAuthModal(\'login\')">Inloggen</button></div></div>'
+  const p=PLACES[swipeIdx%PLACES.length]
+  return `<div class="card" style="max-width:420px;margin:0 auto">
+    <img class="placeImg" src="${p.img}" alt="${p.name}"/>
+    <div class="cardBd" style="text-align:center">
+      <h3 style="margin:0">${p.name}</h3><p class="muted small">${p.loc}</p><p style="font-size:14px">${p.desc}</p>
+      <div class="row" style="justify-content:center;margin-top:12px">
+        <button class="btn" id="swipeLeft" style="font-size:22px;padding:10px 20px">✗</button>
+        <button class="btn btnPrimary" id="swipeRight" style="font-size:22px;padding:10px 20px">♥</button>
+      </div>
+      <p class="muted small" style="margin-top:8px">${swipeIdx+1} / ${PLACES.length}</p>
+    </div></div>`
+}
+function bindSwipe(){
+  const l=qs('#swipeLeft'),r=qs('#swipeRight')
+  if(l)l.onclick=()=>{swipeIdx++;toast('Overgeslagen');render()}
+  if(r)r.onclick=()=>{const p=PLACES[swipeIdx%PLACES.length];if(!currentUser.saved.includes(p.id)){currentUser.saved.push(p.id);const u=usersDB.find(x=>x.id===currentUser.id);if(u)u.saved=currentUser.saved;persistAll()};swipeIdx++;toast('Liked & opgeslagen!');render()}
+}
+
+/* ── Map ── */
+function initMap(){
+  setTimeout(()=>{
+    const m=L.map('mapEl').setView([5,110],4)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(m)
+    PLACES.forEach(p=>{L.marker([p.lat,p.lng]).addTo(m).bindPopup(`<strong>${p.name}</strong><br>${p.loc}<br><em>${p.desc.slice(0,80)}…</em>`)})
+  },80)
+}
+
+/* ── Profile ── */
+const TRAVELER_TYPES=['Backpacker','Luxe reiziger','Digitale nomad','Avonturier','Cultuurliefhebber','Foodie','Strandganger','Stadsverkenner']
+const ALL_HOBBIES=['Fotografie','Duiken','Hiken','Koken','Surfen','Yoga','Geschiedenis','Nightlife','Fietsen','Wildlife','Shoppen','Meditatie']
+
+/* ── Profile ── */
+function renderProfile(){
+  if(!currentUser) return '<div class="card"><div class="cardBd"><p>Log in om je profiel te zien.</p><button class="btn btnPrimary" onclick="showAuthModal(\'login\')">Inloggen</button></div></div>'
+  const u=viewingUser||currentUser, isOwn=!viewingUser||viewingUser.id===currentUser.id, E=profileEdit&&isOwn
+  const s=PLACES.filter(p=>u.saved.includes(p.id))
+  const av=u.photo?`background-image:url(${u.photo});background-size:cover;background-position:center`:`background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700`
+  const ac=u.photo?'':u.name.charAt(0).toUpperCase()
+  return `<div style="max-width:560px">
+    ${viewingUser?'<button class="btn small" onclick="viewingUser=null;render()" style="margin-bottom:10px">← Terug naar mijn profiel</button>':''}
+    <div class="card" style="margin-bottom:14px"><div class="cardBd">
+      <div class="row" style="margin-bottom:14px">
+        <div style="width:72px;height:72px;border-radius:50%;overflow:hidden;flex-shrink:0;${av}">${ac}</div>
+        <div style="flex:1;min-width:0">
+          ${E?`<input class="input" id="pName" value="${u.name}" placeholder="Naam" style="margin-bottom:6px"/>`:`<h3 style="margin:0">${u.name}</h3>`}
+          ${E?`<input class="input" id="pAge" type="number" value="${u.age}" placeholder="Leeftijd" style="width:120px"/>`:`<span class="muted small">${u.age?u.age+' jaar':''} • ${u.travelerType} • @${u.username}</span>`}
         </div>
-        <div class="row"><input class="input" id="chatInput" placeholder="Typ een bericht…"/><button class="btn btnPrimary" id="chatSend">Stuur</button></div>
-      </div></div>`
-    }
-    function bindChat(){
-      const btn=qs('#chatSend'),inp=qs('#chatInput')
-      if(!btn||!inp) return
-      const send=()=>{
-        const t=inp.value.trim(); if(!t) return
-        const c=CHATS.find(x=>x.id===currentChat); if(!c) return
-        c.msgs.push({from:'me',text:t}); inp.value=''
-        setTimeout(()=>{c.msgs.push({from:'them',text:'Leuk! Daar weet ik meer over 😊'});render()},900)
-        render()
-      }
-      btn.onclick=send
-      inp.onkeydown=e=>{if(e.key==='Enter')send()}
-    }
+        ${isOwn?`<button class="btn${E?' btnPrimary':''}" onclick="profileEdit=!profileEdit;${E?'saveProfile();':''}render()">${E?'Opslaan':'✎ Bewerk'}</button>`:''}
+      </div>
+      ${E?`<input class="input" id="pPhoto" value="${u.photo}" placeholder="Profielfoto URL" style="margin-bottom:10px"/>
+        <textarea class="input" id="pBio" rows="3" placeholder="Bio…">${u.bio}</textarea>
+        <select class="input" id="pType" style="margin-top:10px">${TRAVELER_TYPES.map(t=>`<option${t===u.travelerType?' selected':''}>${t}</option>`).join('')}</select>`
+        :(u.bio?`<p style="margin:10px 0;font-size:14px">${u.bio}</p>`:'')}
+      ${E?`<div style="margin-top:12px"><span class="muted small">Interesses</span><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+        ${ALL_HOBBIES.map(h=>`<button class="pill small" style="cursor:pointer;${u.hobbies.includes(h)?'background:rgba(255,107,107,.22);border-color:rgba(255,107,107,.55)':''}" onclick="toggleHobby('${h}')">${h}</button>`).join('')}
+      </div></div>`:`<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">${u.hobbies.map(h=>`<span class="pill small" style="background:rgba(255,107,107,.12)">${h}</span>`).join('')}</div>`}
+      <div style="margin-top:12px"><span class="muted small">Badges</span><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${renderBadges(u)}</div></div>
+    </div></div>
+    <div class="card"><div class="cardBd">
+      <h4 style="margin:0 0 8px">Opgeslagen bestemmingen <span class="muted small">(${s.length})</span></h4>
+      ${s.length?s.map(p=>`<div class="row" style="margin-bottom:8px"><img src="${p.img}" style="width:60px;height:40px;object-fit:cover;border-radius:8px"/><div><strong>${p.name}</strong><br><span class="muted small">${p.loc}</span></div><div class="spacer"></div>${isOwn?`<button class="btn small" onclick="toggleSave('${p.id}')">✗</button>`:''}</div>`).join(''):'<p class="muted small">Nog niets opgeslagen.</p>'}
+    </div></div></div>`
+}
+function saveProfile(){
+  const n=qs('#pName'),a=qs('#pAge'),b=qs('#pBio'),t=qs('#pType'),ph=qs('#pPhoto')
+  if(n)currentUser.name=n.value.trim()||'Reiziger'
+  if(a)currentUser.age=a.value
+  if(b)currentUser.bio=b.value.trim()
+  if(t)currentUser.travelerType=t.value
+  if(ph)currentUser.photo=ph.value.trim()
+  const u=usersDB.find(x=>x.id===currentUser.id);if(u)Object.assign(u,currentUser)
+  persistAll();updateAuthBar();toast('Profiel opgeslagen!')
+}
+function toggleHobby(h){
+  const i=currentUser.hobbies.indexOf(h)
+  if(i>=0)currentUser.hobbies.splice(i,1);else currentUser.hobbies.push(h)
+  const u=usersDB.find(x=>x.id===currentUser.id);if(u)u.hobbies=currentUser.hobbies
+  persistAll();render()
+}
 
-    /* Boot */
-    render()
-  </script>
+/* ── Community (zoek gebruikers) ── */
+/* ── Community ── */
+function renderCommunity(){
+  if(!currentUser) return '<div class="card"><div class="cardBd"><p>Log in om de community te zien.</p></div></div>'
+  const others=usersDB.filter(u=>u.id!==currentUser.id)
+  return `<div style="max-width:560px">
+    <div class="card" style="margin-bottom:14px"><div class="cardBd">
+      <h3 style="margin:0 0 10px">Community</h3>
+      <input class="input" id="userSearch" placeholder="Zoek gebruikers…" oninput="filterUsers()"/>
+    </div></div>
+    <div id="userList">${renderUserList(others)}</div>
+  </div>`
+}
+function renderUserList(list){
+  if(!list.length) return '<div class="card"><div class="cardBd"><p class="muted small">Geen gebruikers gevonden.</p></div></div>'
+  return list.map(u=>{
+    const av=u.photo?`background-image:url(${u.photo});background-size:cover`:`background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700`
+    const ac=u.photo?'':u.name.charAt(0).toUpperCase()
+    return `<div class="card" style="margin-bottom:10px"><div class="cardBd">
+      <div class="row">
+        <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;${av}">${ac}</div>
+        <div style="flex:1"><strong>${u.name}</strong> <span class="muted small">@${u.username}</span><br>
+          <span class="muted small">${u.travelerType} • ${u.saved.length} opgeslagen • ${u.addedPlaces.length} toegevoegd</span><br>
+          <span style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${renderBadges(u)}</span>
+        </div>
+        <button class="btn small" onclick="viewUserProfile('${u.id}')">Bekijk</button>
+      </div>
+    </div></div>`
+  }).join('')
+}
+function filterUsers(){
+  const q=qs('#userSearch').value.toLowerCase()
+  const list=usersDB.filter(u=>u.id!==currentUser.id&&(u.name.toLowerCase().includes(q)||u.username.toLowerCase().includes(q)))
+  qs('#userList').innerHTML=renderUserList(list)
+}
+function viewUserProfile(id){
+  viewingUser=usersDB.find(u=>u.id===id);if(!viewingUser)return
+  currentRoute='profile';updateNav();render()
+}
+
+/* ── Chats ── */
+/* ── Chats ── */
+function renderChatList(){
+  currentChat=null
+  return `<div class="card" style="max-width:520px"><div class="cardBd">
+    <h3 style="margin:0 0 10px">Chats</h3>
+    ${CHATS.map(c=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="currentChat='${c.id}';render()">
+      <div style="width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700">${c.avatar}</div>
+      <div><strong>${c.name}</strong><br><span class="muted small">${c.msgs[c.msgs.length-1].text.slice(0,40)}…</span></div>
+    </div>`).join('')}
+  </div></div>`
+}
+function renderChatDetail(){
+  const c=CHATS.find(x=>x.id===currentChat);if(!c)return renderChatList()
+  return `<div class="card" style="max-width:520px"><div class="cardBd">
+    <div class="row"><button class="btn small" onclick="currentChat=null;render()">← Terug</button><strong style="margin-left:8px">${c.name}</strong></div>
+    <div style="margin:12px 0;max-height:50vh;overflow-y:auto">
+      ${c.msgs.map(m=>`<div style="text-align:${m.from==='me'?'right':'left'};margin:6px 0">
+        <span style="display:inline-block;padding:8px 12px;border-radius:14px;max-width:80%;background:${m.from==='me'?'rgba(255,107,107,.18)':'rgba(255,255,255,.06)'}">${m.text}</span>
+      </div>`).join('')}
+    </div>
+    <div class="row"><input class="input" id="chatInput" placeholder="Typ een bericht…"/><button class="btn btnPrimary" id="chatSend">Stuur</button></div>
+  </div></div>`
+}
+function bindChat(){
+  const btn=qs('#chatSend'),inp=qs('#chatInput');if(!btn||!inp)return
+  const send=()=>{const t=inp.value.trim();if(!t)return;const c=CHATS.find(x=>x.id===currentChat);if(!c)return;c.msgs.push({from:'me',text:t});inp.value='';setTimeout(()=>{c.msgs.push({from:'them',text:'Leuk! Daar weet ik meer over 😊'});render()},900);render()}
+  btn.onclick=send;inp.onkeydown=e=>{if(e.key==='Enter')send()}
+}
+
+/* ── Admin (plekken toevoegen) ── */
+/* ── Admin ── */
+const ALL_TAGS=['eten','cultuur','natuur','strand','avontuur','romantisch','nightlife','sport','wellness','architectuur']
+function renderAdmin(){
+  if(!currentUser||!currentUser.isAdmin) return '<div class="card"><div class="cardBd"><p>Alleen beheerders hebben toegang.</p></div></div>'
+  return `<div style="max-width:600px">
+    <div class="card" style="margin-bottom:14px"><div class="cardBd">
+      <h3 style="margin:0 0 14px">Nieuwe Plek Toevoegen</h3>
+      <input class="input" id="apName" placeholder="Naam van de plek" style="margin-bottom:10px"/>
+      <input class="input" id="apLoc" placeholder="Locatie (bijv. Thailand)" style="margin-bottom:10px"/>
+      <div class="row" style="margin-bottom:10px">
+        <input class="input" id="apLat" type="number" step="any" placeholder="Latitude" style="flex:1"/>
+        <input class="input" id="apLng" type="number" step="any" placeholder="Longitude" style="flex:1"/>
+      </div>
+      <input class="input" id="apImg" placeholder="Afbeelding URL (of laat leeg voor placeholder)" style="margin-bottom:10px"/>
+      <textarea class="input" id="apDesc" rows="3" placeholder="Beschrijving…" style="margin-bottom:10px"></textarea>
+      <div style="margin-bottom:10px"><span class="muted small">Tags</span><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="apTags">
+        ${ALL_TAGS.map(t=>`<button class="pill small" data-tag="${t}" style="cursor:pointer" onclick="this.classList.toggle('active');this.style.background=this.classList.contains('active')?'rgba(255,107,107,.22)':'';this.style.borderColor=this.classList.contains('active')?'rgba(255,107,107,.55)':''">${t}</button>`).join('')}
+      </div></div>
+      <button class="btn btnPrimary" onclick="addPlace()">+ Plek Toevoegen</button>
+    </div></div>
+    <div class="card"><div class="cardBd">
+      <h4 style="margin:0 0 10px">Alle Plekken (${PLACES.length})</h4>
+      ${PLACES.map(p=>`<div class="row" style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+        <img src="${p.img}" style="width:60px;height:40px;object-fit:cover;border-radius:8px"/>
+        <div style="flex:1"><strong>${p.name}</strong><br><span class="muted small">${p.loc} • ${p.tags.join(', ')}</span></div>
+        <button class="btn small" onclick="removePlace('${p.id}')" style="color:var(--accent)">Verwijder</button>
+      </div>`).join('')}
+    </div></div>
+  </div>`
+}
+function addPlace(){
+  const name=qs('#apName').value.trim(),loc=qs('#apLoc').value.trim(),lat=parseFloat(qs('#apLat').value),lng=parseFloat(qs('#apLng').value)
+  const img=qs('#apImg').value.trim()||`https://placehold.co/600x380/264653/eaf2ff?text=${encodeURIComponent(name)}`
+  const desc=qs('#apDesc').value.trim()
+  const tags=qsa('#apTags .active').map(b=>b.dataset.tag)
+  if(!name||!loc){toast('Vul naam en locatie in');return}
+  if(isNaN(lat)||isNaN(lng)){toast('Vul geldige coördinaten in');return}
+  const p={id:uid(),name,loc,lat,lng,img,tags,desc,addedBy:currentUser.id}
+  PLACES.push(p);currentUser.addedPlaces.push(p.id)
+  const u=usersDB.find(x=>x.id===currentUser.id);if(u)u.addedPlaces=currentUser.addedPlaces
+  persistAll();toast('Plek "'+name+'" toegevoegd!');render()
+}
+function removePlace(id){
+  PLACES.splice(PLACES.findIndex(p=>p.id===id),1);persistAll();toast('Plek verwijderd');render()
+}
+function bindAdmin(){}
+
+/* ── Boot ── */
+if(loadData('appVersion',0)<2){sessionStorage.removeItem('placesDB');PLACES=[
+  {id:'p1',name:'Bangkok Street Food',loc:'Thailand',lat:13.7563,lng:100.5018,img:'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=380&fit=crop',tags:['eten','cultuur'],desc:'Proef pad thai, mango sticky rice en tom yum op de bruisende nachtmarkten.',addedBy:'admin'},
+  {id:'p2',name:'Chiang Mai Tempels',loc:'Thailand',lat:18.7883,lng:98.9853,img:'https://images.unsplash.com/photo-1528181304800-259b08848526?w=600&h=380&fit=crop',tags:['cultuur','natuur'],desc:'Gouden tempels in de bergen, nachtbazaars en olifantenopvang.',addedBy:'admin'},
+  {id:'p3',name:'Koh Phi Phi',loc:'Thailand',lat:7.7407,lng:98.7784,img:'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&h=380&fit=crop',tags:['strand','avontuur'],desc:'Kristalhelder water, kalksteenrotsen en de beroemde Maya Bay.',addedBy:'admin'},
+  {id:'p4',name:'Ubud Rijstvelden',loc:'Bali',lat:-8.5069,lng:115.2625,img:'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&h=380&fit=crop',tags:['natuur','cultuur'],desc:'Tegallalang rijstterrassen, apenbos en yoga-retreats.',addedBy:'admin'},
+  {id:'p5',name:'Uluwatu Kliffen',loc:'Bali',lat:-8.8291,lng:115.0849,img:'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&h=380&fit=crop',tags:['strand','romantisch'],desc:'Spectaculaire klifftempel boven de oceaan met kecak-dans bij zonsondergang.',addedBy:'admin'},
+  {id:'p6',name:'Nusa Penida',loc:'Bali',lat:-8.7275,lng:115.5444,img:'https://images.unsplash.com/photo-1570789210967-2cac24571b8c?w=600&h=380&fit=crop',tags:['avontuur','strand'],desc:'Kelingking Beach, manta rays en ongerepte natuur.',addedBy:'admin'}
+];saveData('placesDB',PLACES);saveData('appVersion',2)}
+updateAuthBar();updateNav();render()
+</script>
 </body>
 </html>
